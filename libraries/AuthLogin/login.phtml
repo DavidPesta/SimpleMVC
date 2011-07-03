@@ -1,0 +1,54 @@
+<?php
+/*
+* Copyright (c) 2011 David Pesta, http://www.simplemvc.org
+* Licensed under the MIT License.
+* You should have received a copy of the MIT License along with this program.
+* If not, see http://www.opensource.org/licenses/mit-license.php
+*/
+?>
+
+<div id="loginPanel"<?= $emailRemembered != null ? " style='display: none;'" : "" ?>>
+	<form method="POST">
+		<? if( ! empty( $messages ) ): ?>
+			Problem logging in:<br>
+			<? foreach( $messages as $message ): ?>
+				&bull; <?= $message ?><br>
+			<? endforeach; ?>
+			<br>
+		<? endif; ?>
+		<input type="textbox" name="email" value="<?= $prepopulate[ 'email' ] ?>"> Email Login<br>
+		<input type="password" name="password"> Password<br>
+		<input type="submit" value="Log In">
+		<input type="checkbox" name="rememberMe" value="1"> Remember Me<br>
+		<a id="forgotPasswordLink-interface" href="<?= $forgotPasswordLink ?>/email/<?= str_replace( '"', '', $_POST[ 'email' ] ) ?>">Forgot Password?</a><br>
+		Create an Account
+	</form>
+</div>
+
+<div id="loginPanelRemembered"<?= $emailRemembered == null ? " style='display: none;'" : "" ?>>
+	<form method="POST">
+		<input type="hidden" name="email" value="<?= $emailRemembered ?>">
+		<table>
+			<tr>
+				<td valign="top">
+					<b>Login Remembered:</b>
+				</td>
+				<td align="center">
+					<i><?= $emailRemembered ?></i><br>
+					<span id="notYou">Not you?</span><br>
+					<input type="submit" value="Log In">
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+
+<script>
+	$( document ).ready( function() {
+		$( "#notYou" ).click( function() {
+			$( "#loginPanelRemembered" ).fadeOut( 400, function() {
+				$( "#loginPanel" ).fadeIn();
+			});
+		});
+	});
+</script>

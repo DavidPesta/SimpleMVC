@@ -1,0 +1,4 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule !\.(js|css|ico|txt|gif|jpg|jpeg|png|pdf|jsp|swf|flv|mp3|ogg|xml|html|htm|xhtml|xhtm|svg|eot|ttf|zip|tar|gz)$ router.php

@@ -1,0 +1,72 @@
+For Basic FormRecord Installation:
+
+- In the bootstrap.php:
+include LIBRARY_FOLDER . "FormRecord/FormRecord.php";
+
+
+For Form Validation:
+
+- Copy form-record.css to /webroot/css and modify it as desired
+
+- Copy form-record.js to /webroot/js and modify it if neccessary
+
+- Copy valid.png and invalid.png to /webroot/images or replace them with different images to match the website's style
+
+- Choose a loader from loader[1-6].gif and rename it to loading.gif while copying it to /webroot/images
+  - Special Note: All of these loader gifs were created at http://www.ajaxload.info/ which are "totally free for use"
+
+- At the top of your phtml form file:
+<script type="text/javascript" src="/js/form-record.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/form-record.css"/>
+
+- Create a form the following way:
+<form id="<form id>" method="POST">
+  <table id="<name>-record" style="border-collapse:collapse; margin:0; padding:0;">
+    <?= $user->tableRow( "<database column name>" ) ?>
+    <?= $user->tableRow( "<database column name>" ) ?>
+    ...
+    <?=
+      $user->tableRow( "<custom field name>", array(
+        'prettyName' => "<custom pretty name>",
+        'element' => '<custom element>'
+      ))
+    ?>
+  </table>
+  <input type="submit" class="submit disabled" value="<Button Name>" disabled>
+</form>
+
+- Inside of your phtml form file, inside of <script></script> tags:
+<?= FormRecord::validation( "<form id>", $formRecordObject1, $formRecordObject2, etc ) ?>
+
+- To apply custom validation to the form:
+  - Create a javascript object called <form id>CustomValidation and place it BEFORE the <?= FormRecord::validation( etc ) ?> shown immediately above
+<form id>CustomValidation = {
+  field1: function( validator ) {
+    ...
+  },
+  
+  field2: function( validator ) {
+    ...
+  },
+  
+  ...
+};
+
+- To create custom validation messages:
+  - Create a javascript object called <form id>CustomMessages and place it BEFORE the <?= FormRecord::validation( etc ) ?> shown above
+<form id>CustomMessages = {
+  valid: "<new message>",
+  required: "<new message>",
+  ajaxChecking: "<new message>",
+  ...
+};
+
+- To control what CSS elements get updated by changes to the validation state of fields:
+  - Create a javascript object called <form id>UpdatedElements and place it BEFORE the <?= FormRecord::validation( etc ) ?> shown above
+<form id>UpdatedElements = [ "", "-status", ... ];
+
+- To use AJAX validation
+  - Invoke this inside a <form id>CustomValidation method in the phtml form file:
+    validator.ajaxValidate( "<field name>", "/<ajax php action file>" );
+  - Place this into your ajax php action file:
+    echo <FormRecord Child>::ajaxValidateTestFieldValueExists( $_POST[ 'fieldName' ], $_POST[ 'value' ] );

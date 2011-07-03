@@ -1,0 +1,7 @@
+<h1>Sorry for the trouble!</h1>
+
+A problem with this webpage has been logged and will be investigated.<br>
+
+<? foreach( $error as $key => $value ): ?>
+	<pre><b><?= $key ?>:</b> <?= print_r( $value, 1 ) ?></pre>
+<? endforeach; ?>

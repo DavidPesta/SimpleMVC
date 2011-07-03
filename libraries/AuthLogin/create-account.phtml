@@ -1,0 +1,110 @@
+<?php
+/*
+* Copyright (c) 2011 David Pesta, http://www.simplemvc.org
+* Licensed under the MIT License.
+* You should have received a copy of the MIT License along with this program.
+* If not, see http://www.opensource.org/licenses/mit-license.php
+*/
+?>
+
+<script type="text/javascript" src="/js/form-record.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/form-record.css"/>
+
+<? if( $createAccountMode == "emailPassword" ): ?>
+<? else: ?>
+	<form id="newUser" method="POST">
+		<b>Create an Account</b><br>
+		<table id="user-record" style="border-collapse:collapse; margin:0; padding:0;">
+			
+			<?= $user->tableRow( "username" ) ?>
+			<?= $user->tableRow( "email" ) ?>
+			<?= $user->tableRow( "password" ) ?>
+			<?=
+				$user->tableRow( "confirmPassword", array(
+					'prettyName' => "Confirm Password",
+					'element' => 'password'
+				))
+			?>
+			
+		</table>
+		<input type="submit" class="submit disabled" value="Create Account" disabled>
+	</form>
+	
+	<script>
+		// The following is a whacky example of custom validation for proof of concept purposes
+		newUserCustomValidation = {
+			username: function( validator ) {
+				// if username's third character is "d", then do not validate
+				var characters = $( '#username' ).val().split( "" );
+				if( characters[ 2 ] == "d" ) {
+					validator.setInvalid( 'username' );
+					validator.setMessage( "username", "You are not allowed to use the letter 'd' as the 3rd character of your username." );
+				}
+				validator.ajaxValidate( "username", "/ajax-validate" );
+			},
+			
+			email: function( validator ) {
+				validator.ajaxValidate( "email", "/ajax-validate" );
+			},
+			
+			password: function( validator ) {
+				var password = $( '#password' ).val();
+				var confirmPassword = $( '#confirmPassword' ).val();
+				
+				if( password.length < 6 ) {
+					validator.setInvalid( 'password' );
+					validator.setMessage( 'password', 'Your password must be at least 6 character in length.' );
+				}
+				
+				// if password's second character is "s", then validate regardless of other rules, but do not validate this if event is keyup
+				if( validator.event != "keyup" ) {
+					var characters = password.split( "" );
+					if( characters[ 1 ] == "s" ) {
+						validator.setValid( 'password' );
+						validator.setMessage( "username", "valid" );
+					}
+				}
+				
+				if( validator.isValid( "password" ) ) {
+					if( password == confirmPassword ) {
+						validator.setValid( 'confirmPassword' );
+						validator.setMessage( "confirmPassword", "valid" );
+					}
+					else {
+						validator.setInvalid( 'confirmPassword' );
+						validator.setMessage( 'confirmPassword', 'Confirm Password must be the same as Password above.' );
+					}
+					if( validator.isActivated( "confirmPassword" ) ) validator.activate( "confirmPassword" );
+				}
+			},
+			
+			confirmPassword: function( validator ) {
+				var password = $( '#password' ).val();
+				var confirmPassword = $( '#confirmPassword' ).val();
+				
+				if( password != confirmPassword ) {
+					validator.setInvalid( 'confirmPassword' );
+					validator.setMessage( 'confirmPassword', 'Confirm Password must be the same as Password above.' );
+				}
+				
+				// if confirmPassword's first character is "a", then validate and activate immediately regardless of other rules
+				var characters = confirmPassword.split( "" );
+				if( characters[ 0 ] == "a" ) {
+					validator.setValid( 'confirmPassword' );
+					validator.setMessage( "confirmPassword", "valid" );
+					validator.activate( "confirmPassword" );
+				}
+			}
+		};
+		
+		newUserCustomMessages = {
+			valid: "WOOOTT!",
+			required: "This is really very required man.",
+			ajaxChecking: "Please Wait"
+		};
+		
+		newUserUpdatedElements = [ "", "-status" ];
+		
+		<?= FormRecord::validation( "newUser", $user ) ?>
+	</script>
+<? endif; ?>

@@ -1,0 +1,19 @@
+.field-status { visibility: hidden; }
+
+.field.valid { background-color: #AFA; }
+.field-label.valid { color: #080; }
+.field-input.valid {}
+.field-input-text.valid { background-color: #0A0; }
+.field-status.valid { visibility: visible; color: #080; background: url( "/images/valid.png" ) no-repeat left center; padding-left: 20px; }
+
+.field.invalid { background-color: #FAA; }
+.field-label.invalid { color: #D00; }
+.field-input.invalid {}
+.field-input-text.invalid { background-color: #D00; }
+.field-status.invalid { visibility: visible; color: #D00; background: url( "/images/invalid.png" ) no-repeat left center; padding-left: 20px; }
+
+.field.pending {}
+.field-label.pending {}
+.field-input.pending {}
+.field-input-text.pending {}
+.field-status.pending { visibility: visible; background: url( "/images/loading.gif" ) no-repeat left center; padding-left: 20px; }
