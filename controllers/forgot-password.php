@@ -1,3 +1,3 @@
 <?php
 
-AuthLogin::forgotPassword();
+Auth::forgotPassword();

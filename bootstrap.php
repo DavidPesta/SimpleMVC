@@ -59,7 +59,7 @@ include LIBRARY_FOLDER . "Database.php";
 include LIBRARY_FOLDER . "ExceptionLogger.php";
 include LIBRARY_FOLDER . "FormRecord/FormRecord.php";
 include LIBRARY_FOLDER . "DatabaseCache.php";
-include LIBRARY_FOLDER . "AuthLogin/AuthLogin.php";
+include LIBRARY_FOLDER . "Auth/Auth.php";
 
 
 // Create database handlers and initialize models
@@ -75,7 +75,6 @@ $dbh = new Database(array(
 $dbh->autoGenerateRemainingModels();
 
 
-// Initialize AuthLogin variables
+// Initialize Auth variables
 
-AuthLogin::init(array(
-));
+Auth::init();

@@ -7,21 +7,23 @@
 * If not, see http://www.opensource.org/licenses/mit-license.php
 */
 
-class AuthLogin
+class Auth
 {
 	private static $_loginRedirect = "/home"; // The URL to redirect to after the user successfully logs in
 	private static $_logoutRedirect = "/login"; // The URL to redirect to after the user logs out
 	private static $_forgotPasswordLink = "/forgot-password"; // The URL location of the Forgot Password page
 	private static $_rememberMeDays = 30; // The number of days that the Remember Me feature remembers the user
 	private static $_createAccountMode = "emailActivation"; // The default mode for create account functionality
+	private static $_dbPrefix = ""; // The database prefix that the Auth operations should be performed on
 	
-	public static function init( $settings )
+	public static function init( $settings = array() )
 	{
 		self::$_loginRedirect = $settings[ 'loginRedirect' ] ?: self::$_loginRedirect;
 		self::$_logoutRedirect = $settings[ 'logoutRedirect' ] ?: self::$_logoutRedirect;
 		self::$_forgotPasswordLink = $settings[ 'forgotPasswordLink' ] ?: self::$_forgotPasswordLink;
 		self::$_rememberMeDays = $settings[ 'rememberMeDays' ] ?: self::$_rememberMeDays;
 		self::$_createAccountMode = $settings[ 'createAccountMode' ] ?: self::$_createAccountMode;
+		self::$_dbPrefix = $settings[ 'dbPrefix' ] ? $settings[ 'dbPrefix' ] . "_" : self::$_dbPrefix;
 	}
 	
 	// TODO: If activatedAt is null, then re-send the activation email and let them know to check their email and click on the link to activate their account
@@ -29,10 +31,12 @@ class AuthLogin
 	// This method should be invoked inside of a controller such as controllers/login.php
 	public static function login()
 	{
+		$UsersClass = self::$_dbPrefix . "Users";
+		
 		$view =& SimpleMVC::$_view;
 		
 		// Default location of view file for this method
-		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "AuthLogin" . "/";
+		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "Auth" . "/";
 		SimpleMVC::$_contentFile = "login";
 		
 		$view->prepopulate = array();
@@ -49,7 +53,7 @@ class AuthLogin
 			$view->prepopulate[ 'email' ] = $email;
 			
 			if( isset( $_COOKIE[ 'rememberMe' ] ) && $email != null ) {
-				$user = Users::fetchRecord( "userId = ?", $_COOKIE[ 'rememberMe' ] );
+				$user = $UsersClass::fetchRecord( "userId = ?", $_COOKIE[ 'rememberMe' ] );
 				if( $user->email == $email ) {
 					$_SESSION[ 'userId' ] = $user->userId;
 					setcookie( "rememberMe", $user->userId, time() + 60 * 60 * 24 * self::$_rememberMeDays ); // Set Remember Me again every time they log in with it
@@ -68,7 +72,7 @@ class AuthLogin
 			if( $_POST[ 'password' ] == null ) $view->messages[] = "You must enter your password to login.";
 			
 			if( $email != null && $_POST[ 'password' ] != null ) {
-				$user = Users::fetchRecord( "email = ?", $email );
+				$user = $UsersClass::fetchRecord( "email = ?", $email );
 				
 				if( $user == null ) $view->messages[] = "The email login '" . $email . "' could not be found in the system.";
 				elseif( $user->password != $_POST[ 'password' ] ) {
@@ -87,7 +91,7 @@ class AuthLogin
 		}
 		else {
 			if( isset( $_COOKIE[ 'rememberMe' ] ) ) {
-				$user = Users::fetchRecord( "userId = ?", $_COOKIE[ 'rememberMe' ] );
+				$user = $UsersClass::fetchRecord( "userId = ?", $_COOKIE[ 'rememberMe' ] );
 				$view->emailRemembered = $user->email;
 			}
 		}
@@ -111,16 +115,18 @@ class AuthLogin
 	// This method should be invoked inside of a controller such as controllers/forgot-password.php
 	public static function forgotPassword()
 	{
+		$UsersClass = self::$_dbPrefix . "Users";
+		
 		$view =& SimpleMVC::$_view;
 		
 		// Default location of view file for this method
-		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "AuthLogin" . "/";
+		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "Auth" . "/";
 		SimpleMVC::$_contentFile = "forgot-password";
 		
 		if( ! empty( $_POST ) ) {
 			$email = trim( $_POST[ 'email' ] );
 			
-			$user = Users::fetchRecord( "email = ?", $email );
+			$user = $UsersClass::fetchRecord( "email = ?", $email );
 			if( $user == null ) {
 				$view->messages[] = $email . " could not be found in the system. Please double-check and try again.";
 			}
@@ -148,10 +154,12 @@ class AuthLogin
 	// This method should be invoked inside of a controller such as controllers/create-account.php
 	public static function createAccount()
 	{
+		$UsersClass = self::$_dbPrefix . "Users";
+		
 		$view =& SimpleMVC::$_view;
 		
 		// Default location of view file for this method
-		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "AuthLogin" . "/";
+		SimpleMVC::$_contentFolder = LIBRARY_FOLDER . "Auth" . "/";
 		SimpleMVC::$_contentFile = "create-account";
 		
 		$view->createAccountMode = self::$_createAccountMode;
@@ -159,24 +167,25 @@ class AuthLogin
 		// Let the user input their email login and choose their own password, then email them an activation link to validate their email login
 		if( self::$_createAccountMode == "emailActivation" ) {
 			if( ! empty( $_POST ) ) {
-				$user = Users::createRecord( $_POST );
+				$user = $UsersClass::createRecord( $_POST );
 				if( $user->isValid() == true ) {
+					$user->save();
 					echo "email activation link to user";
 					exit;
 				}
 			}
 			else {
-				$user = Users::createRecord();
+				$user = $UsersClass::createRecord();
 			}
 		}
 		
 		// Let the user input their email login and choose their own password and auto-activate them without validating their email login
 		if( self::$_createAccountMode == "autoActivate" ) {
 			if( ! empty( $_POST ) ) {
-				$user = Users::createRecord( $_POST );
+				$user = $UsersClass::createRecord( $_POST );
 			}
 			else {
-				$user = Users::createRecord();
+				$user = $UsersClass::createRecord();
 			}
 		}
 		
@@ -190,5 +199,19 @@ class AuthLogin
 			$user->changeSchemaRule( "password", "element", "password" );
 			$view->user = $user;
 		}
+	}
+	
+	public static function userPriv( $user, $privId )
+	{
+		$UsersClass = self::$_dbPrefix . "Users";
+		
+		if( $user instanceof FormRecord ) $userId = $user->userId;
+		else $userId = $user;
+		
+		$sql = "select count(*) from role_privs rp join user_roles ur on rp.roleId = ur.roleId where userId = ? and privId = ?";
+		$stmt = $UsersClass::execute( $sql, $userId, $privId );
+		$result = $stmt->fetch( PDO::FETCH_NUM );
+		if( $result[ 0 ] > 0 ) return true;
+		else return false;
 	}
 }

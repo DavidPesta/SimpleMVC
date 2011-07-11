@@ -33,8 +33,12 @@ class Database extends PDO
 				$prefix = $args[ 0 ];
 				$settings = $args[ 1 ];
 			}
+			elseif( is_string( $args[ 0 ] ) ) {
+				$prefix = $args[ 0 ];
+				$settings = array();
+			}
 			else {
-				throw new Exception( "Unexpected parameters for Database constructor: Expects either a string, then an array (2 parameters), or just an array (1 parameter), or no parameters (0 parameters)." );
+				throw new Exception( "Unexpected parameters for Database constructor: Expects either a prefix string, then a settings array (2 parameters), or just a prefix string (1 parameter), or just a settings array (1 parameter), or no parameters (0 parameters)." );
 			}
 		}
 		
@@ -69,6 +73,32 @@ class Database extends PDO
 		);
 		
 		$this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+	}
+	
+	protected static function prepareArgs( $args, & $firstArg, & $remainingArgs )
+	{
+		$num = count( $args );
+		
+		if( $firstArg == null ) $firstArg = "";
+		if( $remainingArgs == null ) $remainingArgs = array();
+		
+		for( $i = 0; $i < $num; $i++ ) {
+			if( $i == 0 ) $firstArg = $args[ $i ];
+			else {
+				if( is_array( $args[ $i ] ) ) $remainingArgs = array_merge( $remainingArgs, $args[ $i ] );
+				else $remainingArgs[] = $args[ $i ];
+			}
+		}
+	}
+	
+	public function execute()
+	{
+		self::prepareArgs( func_get_args(), $sql, $params );
+		
+		$stmt = $this->prepare( $sql );
+		$stmt->execute( $params );
+		
+		return $stmt;
 	}
 	
 	public function createDatabase( $dbname = "database", $autoConnect = true )

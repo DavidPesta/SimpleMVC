@@ -1,3 +1,3 @@
 <?php
 
-AuthLogin::createAccount();
+Auth::createAccount();

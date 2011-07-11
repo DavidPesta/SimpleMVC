@@ -13,5 +13,6 @@ class AllSimpleTests extends TestSuite {
     function __construct() {
         parent::__construct();
         $this->addFile( __DIR__ . "/form-record.php" );
+		$this->addFile( __DIR__ . "/auth.php" );
     }
 }

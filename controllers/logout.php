@@ -1,3 +1,3 @@
 <?php
 
-AuthLogin::logout();
+Auth::logout();

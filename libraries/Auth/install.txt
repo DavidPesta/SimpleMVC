@@ -1,0 +1,62 @@
+/*
+* Copyright (c) 2011 David Pesta, http://www.simplemvc.org
+* Licensed under the MIT License.
+* You should have received a copy of the MIT License along with this program.
+* If not, see http://www.opensource.org/licenses/mit-license.php
+*/
+
+- Make sure the following tables exist in the database:
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `userId` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `username` VARCHAR(255) NOT NULL ,
+  `email` VARCHAR(255) NOT NULL ,
+  `password` VARCHAR(255) NOT NULL ,
+  `createdAt` DATETIME NULL ,
+  `activatedAt` DATETIME NULL ,
+  `bannedUntil` DATETIME NULL ,
+  PRIMARY KEY (`userId`) ,
+  INDEX `IDX_users_username` (`username` ASC) ,
+  INDEX `IDX_users_email` (`email` ASC) )
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `roles` (
+  `roleId` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `prettyName` VARCHAR(64) NOT NULL ,
+  PRIMARY KEY (`roleId`) )
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `role_privs` (
+  `roleId` SMALLINT UNSIGNED NOT NULL ,
+  `privId` CHAR(24) NOT NULL ,
+  PRIMARY KEY (`roleId`, `privId`) ,
+  INDEX `FK_role_privs_role_id` (`roleId` ASC) ,
+  CONSTRAINT `FK_role_privs_role_id`
+    FOREIGN KEY (`roleId` )
+    REFERENCES `roles` (`roleId` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `user_roles` (
+  `userId` INT UNSIGNED NOT NULL ,
+  `roleId` SMALLINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`userId`, `roleId`) ,
+  INDEX `FK_user_roles_user_id` (`userId` ASC) ,
+  INDEX `FK_user_roles_role_id` (`roleId` ASC) ,
+  CONSTRAINT `FK_user_roles_user_id`
+    FOREIGN KEY (`userId` )
+    REFERENCES `users` (`userId` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `FK_user_roles_role_id`
+    FOREIGN KEY (`roleId` )
+    REFERENCES `roles` (`roleId` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+- Make sure the following records exist in the database tables:
+
+

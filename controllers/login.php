@@ -1,3 +1,3 @@
 <?php
 
-AuthLogin::login();
+Auth::login();
